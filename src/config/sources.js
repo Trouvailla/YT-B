@@ -12,10 +12,10 @@ export default {
   sources: [
     {
       id: 'merchant-detail',
-      name: '新签商户明细',
-      path: 'data/新签商户考核-新签商户明细_20260621103338675.xlsx',
+      name: '有效商户明细',
+      path: 'data/有效商户明细_FY26-有效商户明细.xlsx',
       type: 'excel',
-      description: '新签商户考核明细数据',
+      description: '有效商户明细数据',
     },
   ],
 
