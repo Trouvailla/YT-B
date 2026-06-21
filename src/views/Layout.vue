@@ -2,7 +2,7 @@
   <a-layout style="min-height: 100vh">
     <a-layout-sider v-model:collapsed="collapsed" collapsible theme="light" width="220">
       <div class="logo">
-        <span v-if="!collapsed" class="logo-text">📊 数据看板</span>
+        <span v-if="!collapsed" class="logo-text">📊 YT-B 看板</span>
         <span v-else class="logo-text">📊</span>
       </div>
       <a-menu v-model:selectedKeys="selectedKeys" mode="inline" @click="handleMenu">
@@ -10,17 +10,17 @@
           <pie-chart-outlined />
           <span>总览看板</span>
         </a-menu-item>
-        <a-menu-item key="/analysis">
+        <a-menu-item key="/bkpi">
           <bar-chart-outlined />
-          <span>数据分析</span>
+          <span>B端KPI看板</span>
         </a-menu-item>
-        <a-menu-item key="/detail">
-          <table-outlined />
-          <span>数据明细</span>
+        <a-menu-item key="/daibu">
+          <dollar-outlined />
+          <span>代补看板</span>
         </a-menu-item>
-        <a-menu-item key="/config">
-          <setting-outlined />
-          <span>数据配置</span>
+        <a-menu-item key="/chaoqiang">
+          <fire-outlined />
+          <span>超抢手板块</span>
         </a-menu-item>
       </a-menu>
     </a-layout-sider>
@@ -73,6 +73,16 @@
 import { ref, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useDataStore } from '@/stores/data'
+import {
+  PieChartOutlined,
+  BarChartOutlined,
+  DollarOutlined,
+  FireOutlined,
+  MenuUnfoldOutlined,
+  MenuFoldOutlined,
+  BellOutlined,
+  ReloadOutlined,
+} from '@ant-design/icons-vue'
 
 const dataStore = useDataStore()
 const router = useRouter()
@@ -83,9 +93,9 @@ const selectedKeys = ref(['/'])
 
 const pageTitles = {
   '/': '总览看板',
-  '/analysis': '数据分析',
-  '/detail': '数据明细',
-  '/config': '数据配置',
+  '/bkpi': 'B端KPI看板',
+  '/daibu': '代补看板',
+  '/chaoqiang': '超抢手板块',
 }
 const pageTitle = computed(() => pageTitles[route.path] || '数据看板')
 
