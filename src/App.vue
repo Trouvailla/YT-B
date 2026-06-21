@@ -16,9 +16,13 @@ const locale = zhCN
 
 // 应用启动时自动加载数据
 const dataStore = useDataStore()
-onMounted(() => {
-  if (dataStore.config.sources.length > 0 && !dataStore.lastRefresh) {
-    dataStore.refresh()
+onMounted(async () => {
+  try {
+    if (dataStore.config.sources.length > 0 && !dataStore.lastRefresh) {
+      await dataStore.refresh()
+    }
+  } catch (e) {
+    console.warn('初始数据加载失败（可忽略）:', e)
   }
 })
 </script>
