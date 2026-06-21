@@ -11,11 +11,11 @@ export default {
 
   sources: [
     {
-      id: 'daily-report',
-      name: '日报数据',
-      path: 'data/daily-report.xlsx',
+      id: 'merchant-detail',
+      name: '新签商户明细',
+      path: 'data/新签商户考核-新签商户明细_20260621103338675.xlsx',
       type: 'excel',
-      description: '每日业务数据',
+      description: '新签商户考核明细数据',
     },
   ],
 
