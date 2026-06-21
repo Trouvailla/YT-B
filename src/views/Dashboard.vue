@@ -76,6 +76,15 @@
             <a-statistic title="减配覆盖商户数" :value="metrics.reducedCoverage" />
           </a-col>
           <a-col :xs="12" :sm="8" :md="4">
+            <a-statistic
+              title="减配覆盖率"
+              :value="metrics.reducedCoverageRate"
+              suffix="%"
+              :precision="1"
+              :value-style="{ color: metrics.reducedCoverageRate >= 50 ? '#52c41a' : '#fa541c' }"
+            />
+          </a-col>
+          <a-col :xs="12" :sm="8" :md="4">
             <a-statistic title="爆单覆盖率" :value="metrics.boomCoverage" suffix="%" :precision="1" />
           </a-col>
         </a-row>
@@ -85,10 +94,47 @@
       <a-card title="🔥 超抢手分析" style="margin-bottom: 16px">
         <a-row :gutter="[16, 24]">
           <a-col :xs="12" :sm="8" :md="6">
-            <a-statistic title="超抢手有效商户" :value="metrics.activeChaoqiang" />
+            <a-statistic title="超抢手有效商户" :value="metrics.activeChaoqiang">
+              <template #suffix>
+                <a-tooltip title="有效覆盖=1 的商户数">
+                  <span style="font-size: 12px; color: #999; margin-left: 4px">家</span>
+                </a-tooltip>
+              </template>
+            </a-statistic>
           </a-col>
           <a-col :xs="12" :sm="8" :md="6">
-            <a-statistic title="超抢手百单有效商户" :value="metrics.activeChaoqiang100" />
+            <a-statistic title="超抢手百单商户" :value="metrics.chaoqiang100Count">
+              <template #suffix>
+                <a-tooltip title="近30天总订单 ≥ 100 的商户数">
+                  <span style="font-size: 12px; color: #999; margin-left: 4px">家</span>
+                </a-tooltip>
+              </template>
+            </a-statistic>
+          </a-col>
+          <a-col :xs="12" :sm="8" :md="6">
+            <a-statistic title="百单商户有效覆盖数" :value="metrics.chaoqiang100Valid">
+              <template #suffix>
+                <a-tooltip title="百单商户中有效覆盖=1 的商户数">
+                  <span style="font-size: 12px; color: #999; margin-left: 4px">家</span>
+                </a-tooltip>
+              </template>
+            </a-statistic>
+          </a-col>
+          <a-col :xs="12" :sm="8" :md="6">
+            <a-statistic
+              title="超抢手百单有效覆盖率"
+              :value="metrics.chaoqiang100Rate"
+              suffix="%"
+              :precision="1"
+              :value-style="{ color: metrics.chaoqiang100Rate >= 60 ? '#52c41a' : '#fa541c' }"
+            >
+              <template #suffix>
+                <span style="font-size: 12px; color: #999; margin-left: 2px">%</span>
+                <a-tooltip title="百单商户有效覆盖=1 / 超抢手百单商户总数">
+                  <span style="font-size: 11px; color: #aaa; margin-left: 4px">(?)</span>
+                </a-tooltip>
+              </template>
+            </a-statistic>
           </a-col>
         </a-row>
       </a-card>
@@ -149,17 +195,23 @@ const COLUMN_ALIASES = {
   // 商户数
   totalMerchants: ['整商商户数', '商户总数', '总商户数', '商户数', 'merchant_count'],
   fmlCka: ['FML+CKA商户数', 'FML_CKA', 'fml_cka', 'FMLCKA'],
-  operating: ['营业商户', '营业商户数', 'operating'],
+  operating: ['营业商户', '营业商户数', 'operating', '当日是否动销'],
   // 订单
   totalOrders: ['总订单', '订单总数', '订单量', 'total_orders'],
   groupOrders: ['拼团订单', '拼团', 'group_orders'],
   nonGroupOrders: ['非拼团订单', '非拼团', 'non_group_orders'],
-  chaoqiangOrders: ['超抢手订单', '超抢手', 'chaoqiang_orders'],
-  freeDelivery: ['免配订单', '免配', 'free_delivery'],
-  reducedCoverage: ['减配覆盖商户数', '减配覆盖', '减配商户'],
-  boomCoverage: ['爆单覆盖率', '爆单率', '爆单覆盖', 'boom_coverage'],
-  activeChaoqiang: ['超抢手有效商户', '有效超抢手', 'active_chaoqiang'],
-  chaoqiang100: ['超抢手百单有效商户', '百单有效', 'chaoqiang_100'],
+  chaoqiangOrders: ['超抢手订单', '超抢手', 'chaoqiang_orders', '超抢手订单数'],
+  freeDelivery: ['免配订单', '免配', 'free_delivery', '餐饮营销工具_免配订单'],
+  // 减配覆盖：标志位列（0/1），统计=1的商户行数
+  reducedCoverage: ['减配覆盖商户数', '减配覆盖', '减配商户',
+    '餐饮营销工具_当日是否减配覆盖', '当日是否减配覆盖', '是否减配覆盖'],
+  boomCoverage: ['爆单覆盖率', '爆单率', '爆单覆盖', 'boom_coverage',
+    '餐饮营销工具_当日是否爆单红包覆盖', '当日是否爆单红包覆盖'],
+  // 超抢手：有效覆盖标志位（=1表示有效）
+  validCoverage: ['有效覆盖', 'valid_coverage', '超抢手有效覆盖', '是否有效覆盖',
+    '是否超抢手有效覆盖商户', '超抢手有效覆盖商户'],
+  // 近30天总订单（用于百单商户判断 ≥100）
+  recentOrders: ['近30天总订单', '近30天订单', 'recent_30d_orders', '30天总订单'],
 }
 
 // 在数据中查找匹配的列名
@@ -208,9 +260,22 @@ const filteredData = computed(() => {
 
 const cityFilter = computed(() => selectedCity.value || null)
 
+// 按行计数：统计某列值满足条件的行数（支持城市筛选）
+function countWhere(colKey, predicate, cityFilter = null) {
+  const col = findCol(COLUMN_ALIASES[colKey])
+  if (!col) return 0
+  const data = dataStore.activeData.data
+  const rows = cityFilter ? data.filter(r => String(r[cityCol.value] || '') === cityFilter) : data
+  return rows.filter(r => predicate(r[col])).length
+}
+
 // ---- 核心指标计算 ----
 const metrics = computed(() => {
   const city = cityFilter.value
+  const data = dataStore.activeData.data
+  const rows = city && cityCol.value
+    ? data.filter(r => String(r[cityCol.value] || '') === city)
+    : data
 
   // 商户数
   const totalMerchants = sumCol('totalMerchants', city) || countRows(city)
@@ -232,10 +297,49 @@ const metrics = computed(() => {
   const nonGroupOrders = sumCol('nonGroupOrders', city)
   const chaoqiangOrders = sumCol('chaoqiangOrders', city)
   const freeDeliveryOrders = sumCol('freeDelivery', city)
-  const reducedCoverage = sumCol('reducedCoverage', city)
-  const boomCoverage = sumCol('boomCoverage', city)
-  const activeChaoqiang = sumCol('activeChaoqiang', city)
-  const chaoqiang100 = sumCol('chaoqiang100', city)
+
+  // 减配覆盖商户数：统计减配覆盖标志位=1的行数
+  const reducedCoverageCol = findCol(COLUMN_ALIASES.reducedCoverage)
+  const reducedCoverage = reducedCoverageCol
+    ? rows.filter(r => parseFloat(r[reducedCoverageCol]) === 1).length
+    : 0
+
+  // 减配覆盖率 = 减配覆盖商户数 / 总商户数
+  const reducedCoverageRate = totalMerchants > 0
+    ? Math.round((reducedCoverage / totalMerchants) * 10000) / 100
+    : 0
+
+  // 爆单覆盖率：爆单标志位=1的行数 / 总商户数
+  const boomCoverageCol = findCol(COLUMN_ALIASES.boomCoverage)
+  const boomCoveredCount = boomCoverageCol
+    ? rows.filter(r => parseFloat(r[boomCoverageCol]) === 1).length
+    : 0
+  const boomCoverage = totalMerchants > 0
+    ? Math.round((boomCoveredCount / totalMerchants) * 10000) / 100
+    : sumCol('boomCoverage', city)
+
+  // 超抢手有效商户：有效覆盖=1 的行数
+  const validCoverageCol = findCol(COLUMN_ALIASES.validCoverage)
+  const activeChaoqiang = validCoverageCol
+    ? rows.filter(r => parseFloat(r[validCoverageCol]) === 1).length
+    : 0
+
+  // 近30天总订单列
+  const recentOrdersCol = findCol(COLUMN_ALIASES.recentOrders)
+
+  // 超抢手百单商户：近30天总订单 >= 100 的行
+  const chaoqiang100Rows = recentOrdersCol
+    ? rows.filter(r => (parseFloat(r[recentOrdersCol]) || 0) >= 100)
+    : []
+  const chaoqiang100Count = chaoqiang100Rows.length
+
+  // 超抢手百单有效覆盖率：百单商户中有效覆盖=1 的数量 / 百单商户总数
+  const chaoqiang100Valid = validCoverageCol
+    ? chaoqiang100Rows.filter(r => parseFloat(r[validCoverageCol]) === 1).length
+    : 0
+  const chaoqiang100Rate = chaoqiang100Count > 0
+    ? Math.round((chaoqiang100Valid / chaoqiang100Count) * 10000) / 100
+    : 0
 
   return {
     totalMerchants: Math.round(totalMerchants),
@@ -247,10 +351,13 @@ const metrics = computed(() => {
     nonGroupOrders: Math.round(nonGroupOrders),
     chaoqiangOrders: Math.round(chaoqiangOrders),
     freeDeliveryOrders: Math.round(freeDeliveryOrders),
-    reducedCoverage: Math.round(reducedCoverage),
+    reducedCoverage,
+    reducedCoverageRate,
     boomCoverage: Math.round(boomCoverage * 100) / 100,
-    activeChaoqiang: Math.round(activeChaoqiang),
-    activeChaoqiang100: Math.round(chaoqiang100),
+    activeChaoqiang,
+    chaoqiang100Count,
+    chaoqiang100Valid,
+    chaoqiang100Rate,
   }
 })
 
